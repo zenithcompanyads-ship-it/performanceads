@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZENITH Ads Performance</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:       #05050a;
+  --s1:       #0d0d14;
+  --s2:       #13131e;
+  --s3:       #1a1a28;
+  --border:   rgba(255,255,255,0.06);
+  --border2:  rgba(255,255,255,0.11);
+  --text:     #eeedf5;
+  --muted:    #6b6a80;
+  --muted2:   #9998b0;
+  --gold:     #e8c46a;
+  --gold2:    #c9993a;
+  --blue:     #4f8ef7;
+  --meta:     #1877f2;
+  --google:   #34a853;
+  --green:    #3ecf8e;
+  --red:      #f26a6a;
+  --r: 14px;
+  --r-sm: 9px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ─── NOISE OVERLAY ─── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.35;
+}
+
+/* ─── LOGIN ─── */
+#login-screen{
+  position:relative;min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  background:
+    radial-gradient(ellipse 55% 40% at 50% -5%, rgba(232,196,106,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 50% at 90% 80%, rgba(79,142,247,0.07) 0%, transparent 50%),
+    var(--bg);
+}
+.login-wrap{position:relative;z-index:1;width:100%;max-width:420px;padding:24px}
+
+.z-logo{
+  text-align:center;margin-bottom:36px;
+}
+.z-logo .wordmark{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:38px;letter-spacing:4px;
+  background:linear-gradient(135deg,#f0d98a 0%,#e8c46a 40%,#c9993a 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;line-height:1;
+}
+.z-logo .sub{
+  font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--muted2);margin-top:4px;
+}
+
+.login-card{
+  background:var(--s1);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  padding:36px 32px;
+  backdrop-filter:blur(20px);
+}
+.login-card h2{font-size:20px;font-weight:600;margin-bottom:4px}
+.login-card .sub-text{color:var(--muted);font-size:13px;margin-bottom:28px}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:6px;font-weight:500}
+.field input{
+  width:100%;background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:12px 15px;
+  color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.field input:focus{border-color:rgba(232,196,106,0.5);box-shadow:0 0 0 3px rgba(232,196,106,0.08)}
+
+.btn-gold{
+  width:100%;background:linear-gradient(135deg,#e8c46a,#c9993a);
+  border:none;border-radius:var(--r-sm);padding:13px;
+  font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;
+  color:#1a1200;cursor:pointer;margin-top:6px;
+  transition:opacity .2s,transform .1s;letter-spacing:0.3px;
+}
+.btn-gold:hover{opacity:.9;transform:translateY(-1px)}
+.btn-gold:active{transform:translateY(0)}
+
+.demo-hint{
+  margin-top:18px;padding:12px 14px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:8px;font-size:11px;color:var(--muted);line-height:1.8;
+}
+.demo-hint b{color:var(--muted2)}
+
+/* ─── TOPBAR ─── */
+#app{display:none;min-height:100vh;position:relative;z-index:1}
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(5,5,10,0.88);backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;height:56px;
+}
+.topbar-brand{display:flex;align-items:center;gap:10px}
+.topbar-brand .z{
+  font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;
+  background:linear-gradient(135deg,#f0d98a,#c9993a);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.topbar-brand .z-sub{font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.user-pill{
+  display:flex;align-items:center;gap:8px;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:20px;padding:4px 12px 4px 5px;
+}
+.uavatar{
+  width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,#e8c46a,#c9993a);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#1a1200;
+}
+.uname{font-size:12px;font-weight:500}
+.btn-out{
+  background:none;border:1px solid var(--border);border-radius:7px;
+  padding:5px 11px;color:var(--muted);font-size:12px;cursor:pointer;
+  font-family:'Outfit',sans-serif;transition:all .2s;
+}
+.btn-out:hover{border-color:var(--red);color:var(--red)}
+
+/* ─── PAGES ─── */
+.view{display:none}
+.page{display:none;padding:28px;max-width:1140px;margin:0 auto}
+.page.active{display:block}
+
+/* ─── PAGE HEADER ─── */
+.ph{margin-bottom:26px}
+.ph h1{font-size:26px;font-weight:600;letter-spacing:-0.3px;margin-bottom:3px}
+.ph p{color:var(--muted);font-size:13px}
+
+/* ─── TABS ─── */
+.tabs{display:flex;gap:2px;margin-bottom:26px;background:var(--s1);border-radius:10px;padding:4px;width:fit-content;border:1px solid var(--border)}
+.tab{padding:7px 16px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);border:none;background:none;transition:all .2s;font-family:'Outfit',sans-serif}
+.tab.active{background:var(--s3);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.4)}
+.tab:hover:not(.active){color:var(--text)}
+
+/* ─── CARDS ─── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:22px}
+
+/* ─── KPI GRID ─── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.kpi{
+  background:var(--s1);border:1px solid var(--border);border-radius:var(--r);
+  padding:18px 20px;position:relative;overflow:hidden;
+  transition:border-color .2s;
+}
+.kpi::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,#e8c46a,#c9993a);opacity:0;
+  transition:opacity .2s;
+}
+.kpi:hover{border-color:var(--border2)}
+.kpi:hover::after{opacity:1}
+.kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.9px;color:var(--muted);margin-bottom:9px;font-weight:500}
+.kpi-val{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:0.5px;line-height:1;margin-bottom:6px;color:var(--text)}
+.kpi-delta{font-size:11px;display:flex;align-items:center;gap:3px}
+.up{color:var(--green)}.down{color:var(--red)}.neutral{color:var(--muted)}
+
+/* ─── CHARTS ─── */
+.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:20px}
+@media(max-width:780px){.charts-row{grid-template-columns:1fr}}
+.cbox{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:22px}
+.ctitle{font-size:13px;font-weight:600;margin-bottom:18px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.6px}
+
+/* ─── PLATFORM BADGE ─── */
+.pbadge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:0.3px}
+.pb-meta{background:rgba(24,119,242,.15);color:#60a5fa}
+.pb-google{background:rgba(52,168,83,.13);color:#6ecf8a}
+
+/* ─── CLIENT LIST ─── */
+.clients-grid{display:grid;gap:10px}
+.client-row{
+  background:var(--s1);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:16px 18px;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;transition:all .2s;
+}
+.client-row:hover{border-color:rgba(232,196,106,0.25);background:var(--s2)}
+.cinfo{display:flex;align-items:center;gap:12px}
+.cav{
+  width:38px;height:38px;border-radius:9px;
+  background:linear-gradient(135deg,#e8c46a22,#c9993a22);
+  border:1px solid rgba(232,196,106,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;
+  color:var(--gold);
+}
+.cname{font-weight:600;font-size:14px}
+.cmeta{font-size:11px;color:var(--muted);margin-top:1px}
+.rcount{font-size:11px;color:var(--muted);background:var(--s2);padding:3px 9px;border-radius:20px;border:1px solid var(--border)}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+
+/* ─── REPORT CARD ─── */
+.rep-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.rep-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mbox{background:var(--s2);border-radius:8px;padding:10px 12px}
+.mlbl{font-size:10px;text-transform:uppercase;letter-spacing:0.7px;color:var(--muted);margin-bottom:3px}
+.mval{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:0.5px}
+.rep-obs{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.65}
+
+/* ─── TWO COL ─── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+@media(max-width:680px){.two-col,.form-row{grid-template-columns:1fr}}
+
+/* ─── FORM ─── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.7px;color:var(--muted);margin-bottom:6px;font-weight:500}
+.fg input,.fg select,.fg textarea{
+  width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:10px 13px;color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;
+  outline:none;transition:border-color .2s;
+}
+.fg input:focus,.fg select:focus{border-color:rgba(232,196,106,0.4)}
+.fg select{appearance:none;-webkit-appearance:none}
+.fg select option{background:var(--s2)}
+.fg textarea{resize:vertical;min-height:70px;line-height:1.5}
+
+.slbl{font-size:10px;text-transform:uppercase;letter-spacing:0.9px;color:var(--muted);font-weight:500;margin-bottom:10px}
+
+/* ─── BUTTONS ─── */
+.btn-sm{
+  background:linear-gradient(135deg,#e8c46a,#c9993a);
+  color:#1a1200;border:none;border-radius:var(--r-sm);
+  padding:10px 18px;font-family:'Outfit',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;
+}
+.btn-sm:hover{opacity:.85}
+.btn-ghost{
+  background:none;border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:10px 18px;color:var(--muted);font-family:'Outfit',sans-serif;
+  font-size:13px;cursor:pointer;transition:all .2s;
+}
+.btn-ghost:hover{border-color:var(--red);color:var(--red)}
+.btn-back{
+  background:none;border:1px solid var(--border);border-radius:7px;
+  padding:6px 13px;color:var(--muted);font-size:12px;cursor:pointer;
+  font-family:'Outfit',sans-serif;transition:all .2s;
+}
+.btn-back:hover{color:var(--text);border-color:var(--border2)}
+
+/* ─── REPORT NAV ─── */
+.rnav{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.rnav h2{font-size:18px;font-weight:600}
+
+/* ─── PERIOD PILLS ─── */
+.period-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.pp{
+  padding:5px 13px;border-radius:6px;font-size:12px;font-weight:500;
+  cursor:pointer;border:1px solid var(--border);color:var(--muted);
+  background:none;transition:all .2s;font-family:'Outfit',sans-serif;
+}
+.pp.active{background:var(--s2);color:var(--gold);border-color:rgba(232,196,106,0.3)}
+
+/* ─── INSIGHTS ─── */
+.insight{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-top:1px solid var(--border)}
+.insight:first-child{border-top:none;padding-top:0}
+.ii{font-size:16px;margin-top:1px}
+.it{font-size:12px;color:var(--muted);line-height:1.65}
+.it b{color:var(--text);font-weight:600}
+
+/* ─── EMPTY ─── */
+.empty{text-align:center;padding:56px 20px;color:var(--muted)}
+.empty .ei{font-size:36px;margin-bottom:10px}
+.empty h3{font-size:15px;font-weight:600;color:var(--text);margin-bottom:5px}
+.empty p{font-size:12px}
+
+/* ─── SECURE BADGE ─── */
+.secure-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:10px;color:var(--muted);letter-spacing:0.5px;
+  margin-top:14px;
+}
+.slock{width:10px;height:10px;opacity:.5}
+
+/* ─── UPLOAD ZONE ─── */
+.upzone{
+  border:1.5px dashed rgba(232,196,106,0.2);border-radius:var(--r);
+  padding:36px;text-align:center;cursor:pointer;transition:all .2s;
+  background:rgba(232,196,106,0.02);
+}
+.upzone:hover,.upzone.drag{border-color:rgba(232,196,106,0.5);background:rgba(232,196,106,0.05)}
+.upzone h3{font-size:14px;font-weight:600;margin-bottom:4px}
+.upzone p{font-size:12px;color:var(--muted)}
+
+/* ─── TOAST ─── */
+#toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--s2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 18px;font-size:13px;
+  display:flex;align-items:center;gap:8px;
+  transform:translateY(60px);opacity:0;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  z-index:9999;
+}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.success{border-color:rgba(62,207,142,0.35)}
+#toast.error{border-color:rgba(242,106,106,0.35)}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.page.active>*{animation:fadeUp .3s ease both}
+.page.active>*:nth-child(1){animation-delay:.02s}
+.page.active>*:nth-child(2){animation-delay:.06s}
+.page.active>*:nth-child(3){animation-delay:.10s}
+.page.active>*:nth-child(4){animation-delay:.14s}
+.page.active>*:nth-child(5){animation-delay:.18s}
+
+/* ─── DIVIDER ─── */
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+</style>
+</head>
+<body>
+
+<!-- ════════ LOGIN ════════ -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="z-logo">
+      <div class="wordmark">ZENITH</div>
+      <div class="sub">Ads Performance</div>
+    </div>
+    <div class="login-card">
+      <h2>Bem-vindo</h2>
+      <p class="sub-text">Acesse seus relatórios de tráfego pago</p>
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" id="li-email" placeholder="seu@email.com" value="admin@agencia.com">
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="li-pass" placeholder="••••••••" value="123456">
+      </div>
+      <button class="btn-gold" onclick="doLogin()">Entrar</button>
+      <div style="text-align:center">
+        <div class="secure-badge">
+          <svg class="slock" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="6" width="10" height="7" rx="2" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M4.5 6V4.5a2.5 2.5 0 015 0V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          Acesso individual e seguro por cliente
+        </div>
+      </div>
+      <div class="demo-hint">
+        <b>Agência →</b> admin@agencia.com / 123456<br>
+        <b>Cliente →</b> cliente@empresa.com / cliente123<br>
+        <b>Cliente →</b> clinica@saude.com / clinica123
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ APP ════════ -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="z">ZENITH</div>
+      <div class="z-sub">Ads Performance</div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-pill">
+        <div class="uavatar" id="uav">AG</div>
+        <span class="uname" id="uname">Agência</span>
+      </div>
+      <button class="btn-out" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <!-- ── ADMIN VIEW ── -->
+  <div id="admin-view" class="view">
+
+    <div id="pg-clients" class="page active">
+      <div class="ph"><h1>Clientes</h1><p>Gerencie clientes e publique relatórios</p></div>
+      <div class="tabs">
+        <button class="tab active" onclick="aTab('clients',this)">Clientes</button>
+        <button class="tab" onclick="aTab('upload',this)">Novo relatório</button>
+        <button class="tab" onclick="aTab('new-client',this)">Novo cliente</button>
+      </div>
+
+      <!-- clients list -->
+      <div id="atab-clients"><div class="clients-grid" id="clients-list"></div></div>
+
+      <!-- upload form -->
+      <div id="atab-upload" style="display:none">
+        <div class="card" style="max-width:600px">
+          <div class="slbl" style="margin-bottom:18px">Dados do relatório</div>
+          <div class="form-row">
+            <div class="fg"><label>Cliente</label><select id="u-client"></select></div>
+            <div class="fg"><label>Plataforma</label>
+              <select id="u-plat"><option value="meta">Meta Ads</option><option value="google">Google Ads</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label>Período (ex: Março 2025)</label><input type="text" id="u-period" placeholder="Março 2025"></div>
+            <div class="fg"><label>Mês/Ano</label><input type="month" id="u-month"></div>
+          </div>
+          <hr class="divider">
+          <div class="slbl" style="margin-bottom:14px">Métricas</div>
+          <div class="form-row">
+            <div class="fg"><label>Investimento (R$)</label><input type="number" id="m-invest" placeholder="0.00"></div>
+            <div class="fg"><label>Impressões</label><input type="number" id="m-imp" placeholder="0"></div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label>Cliques</label><input type="number" id="m-clicks" placeholder="0"></div>
+            <div class="fg"><label>Conversões</label><input type="number" id="m-conv" placeholder="0"></div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label>CTR (%)</label><input type="number" id="m-ctr" step="0.01" placeholder="0.00"></div>
+            <div class="fg"><label>CPC (R$)</label><input type="number" id="m-cpc" step="0.01" placeholder="0.00"></div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label>CPL / CPA (R$)</label><input type="number" id="m-cpl" step="0.01" placeholder="0.00"></div>
+            <div class="fg"><label>ROAS</label><input type="number" id="m-roas" step="0.01" placeholder="0.00"></div>
+          </div>
+          <div class="fg"><label>Análise / Observações</label>
+            <textarea id="m-obs" placeholder="Insights e destaques da campanha..."></textarea>
+          </div>
+          <div class="upzone" onclick="document.getElementById('fi').click()" id="dz">
+            <div style="font-size:28px;margin-bottom:8px">📎</div>
+            <h3>Anexar arquivo (opcional)</h3>
+            <p>CSV, PDF ou imagem — arraste ou clique</p>
+          </div>
+          <input type="file" id="fi" accept=".csv,.pdf,.png,.jpg">
+          <div style="display:flex;gap:10px;margin-top:18px">
+            <button class="btn-sm" onclick="saveReport()">Publicar relatório</button>
+            <button class="btn-ghost" onclick="clearForm()">Limpar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- new client -->
+      <div id="atab-new-client" style="display:none">
+        <div class="card" style="max-width:460px">
+          <div class="slbl" style="margin-bottom:18px">Dados do cliente</div>
+          <div class="fg"><label>Nome da empresa</label><input type="text" id="nc-name" placeholder="Ex: Loja ABC"></div>
+          <div class="fg"><label>E-mail de acesso</label><input type="email" id="nc-email" placeholder="cliente@empresa.com"></div>
+          <div class="fg"><label>Senha</label><input type="password" id="nc-pass" placeholder="Defina uma senha forte"></div>
+          <div class="fg"><label>Plataformas gerenciadas</label>
+            <select id="nc-plat">
+              <option value="meta,google">Meta Ads + Google Ads</option>
+              <option value="meta">Somente Meta Ads</option>
+              <option value="google">Somente Google Ads</option>
+            </select>
+          </div>
+          <button class="btn-sm" onclick="saveClient()">Criar cliente</button>
+          <div style="margin-top:14px;padding:12px;background:rgba(62,207,142,0.05);border:1px solid rgba(62,207,142,0.15);border-radius:8px;font-size:11px;color:var(--muted);line-height:1.7">
+            🔒 <b style="color:var(--text)">Acesso isolado:</b> cada cliente só visualiza os seus próprios relatórios — nenhum cliente acessa dados de outro.
+          </div>
+        </div>
+      </div>
+    </div><!-- /pg-clients -->
+
+    <!-- Report detail admin -->
+    <div id="pg-rep-admin" class="page">
+      <div class="rnav">
+        <button class="btn-back" onclick="showAdminList()">← Voltar</button>
+        <h2 id="radmin-title">Relatório</h2>
+      </div>
+      <div id="radmin-content"></div>
+    </div>
+
+  </div><!-- /admin-view -->
+
+  <!-- ── CLIENT VIEW ── -->
+  <div id="client-view" class="view">
+    <div id="pg-client" class="page active">
+      <div class="ph">
+        <h1 id="cwelcome">Olá 👋</h1>
+        <p>Seus relatórios de tráfego pago — acesso exclusivo</p>
+      </div>
+      <div class="period-bar" id="cperiods"></div>
+      <div id="crep-content">
+        <div class="empty"><div class="ei">📊</div><h3>Nenhum relatório ainda</h3><p>Seu gestor publicará os relatórios em breve.</p></div>
+      </div>
+    </div>
+  </div><!-- /client-view -->
+
+</div><!-- /app -->
+
+<div id="toast"><span id="t-icon">✓</span><span id="t-msg"></span></div>
+
+<script>
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+const ADMIN = { email:'admin@agencia.com', pass:'123456', name:'Agência', initials:'AG' };
+
+let CLIENTS = [
+  { id:1, name:'Loja Virtual ABC',  email:'cliente@empresa.com', pass:'cliente123', plat:'meta,google', initials:'LA' },
+  { id:2, name:'Clínica Saúde Total', email:'clinica@saude.com',   pass:'clinica123', plat:'google',       initials:'CS' },
+  { id:3, name:'Imobiliária Sol',   email:'imob@sol.com',          pass:'imob123',    plat:'meta',         initials:'IS' }
+];
+
+let REPORTS = [
+  { id:1,clientId:1,platform:'meta',  period:'Março 2025',    month:'2025-03',invest:4200,imp:180000,clicks:3600,conv:142,ctr:2.0,cpc:1.17,cpl:29.58,roas:4.2,obs:'Melhor CPL do trimestre. Retargeting performou muito bem.' },
+  { id:2,clientId:1,platform:'google',period:'Março 2025',    month:'2025-03',invest:3800,imp:95000, clicks:2850,conv:118,ctr:3.0,cpc:1.33,cpl:32.20,roas:3.8,obs:'Search com ROAS acima da meta. Adicionamos 12 novas palavras-chave negativas.' },
+  { id:3,clientId:1,platform:'meta',  period:'Fevereiro 2025',month:'2025-02',invest:3900,imp:165000,clicks:3100,conv:120,ctr:1.88,cpc:1.26,cpl:32.50,roas:3.9,obs:'Bom resultado. CPL levemente acima de março.' },
+  { id:4,clientId:2,platform:'google',period:'Março 2025',    month:'2025-03',invest:2200,imp:55000, clicks:1870,conv:64, ctr:3.4,cpc:1.18,cpl:34.37,roas:0,  obs:'Campanha de leads. Foco em palavras de fundo de funil.' },
+  { id:5,clientId:3,platform:'meta',  period:'Março 2025',    month:'2025-03',invest:5100,imp:220000,clicks:4400,conv:88, ctr:2.0,cpc:1.16,cpl:57.95,roas:0,  obs:'Volume alto de leads qualificados no segmento de imóveis.' }
+];
+
+let nCid=4, nRid=6;
+let CUR=null;
+const charts={};
+
+// ══════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════
+function doLogin(){
+  const em=v('li-email'), pw=v('li-pass');
+  if(em===ADMIN.email&&pw===ADMIN.pass){CUR={...ADMIN,role:'admin'};launch();return;}
+  const cl=CLIENTS.find(c=>c.email===em&&c.pass===pw);
+  if(cl){CUR={...cl,role:'client'};launch();return;}
+  toast('E-mail ou senha incorretos','error');
+}
+function doLogout(){
+  CUR=null;
+  g('app').style.display='none';
+  g('login-screen').style.display='flex';
+}
+function launch(){
+  g('login-screen').style.display='none';
+  g('app').style.display='block';
+  g('uname').textContent=CUR.name||CUR.email;
+  g('uav').textContent=CUR.initials||(CUR.name||'?').slice(0,2).toUpperCase();
+  if(CUR.role==='admin'){
+    g('admin-view').style.display='block';
+    g('client-view').style.display='none';
+    renderClients();populateSelect();
+  } else {
+    g('admin-view').style.display='none';
+    g('client-view').style.display='block';
+    loadClientDash();
+  }
+}
+g('li-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+
+// ══════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════
+function renderClients(){
+  const el=g('clients-list');
+  if(!CLIENTS.length){el.innerHTML='<div class="empty"><div class="ei">👤</div><h3>Nenhum cliente</h3><p>Adicione o primeiro cliente.</p></div>';return;}
+  el.innerHTML=CLIENTS.map(c=>{
+    const n=REPORTS.filter(r=>r.clientId===c.id).length;
+    return`<div class="client-row" onclick="viewClient(${c.id})">
+      <div class="cinfo">
+        <div class="cav">${c.initials}</div>
+        <div><div class="cname">${c.name}</div><div class="cmeta">${c.email}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;gap:5px">${c.plat.split(',').map(p=>pb(p)).join('')}</div>
+        <span class="rcount">${n} rel.</span>
+        <div class="sdot"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function viewClient(id){
+  const cl=CLIENTS.find(c=>c.id===id);
+  const reps=REPORTS.filter(r=>r.clientId===id);
+  showPage('pg-rep-admin');
+  g('radmin-title').textContent=cl.name;
+
+  if(!reps.length){
+    g('radmin-content').innerHTML=`<div class="empty"><div class="ei">📊</div><h3>Sem relatórios</h3><p>Publique o primeiro relatório para este cliente.</p></div>`;
+    return;
+  }
+  const months=[...new Set(reps.map(r=>r.month))].sort().reverse();
+  let html='';
+  months.forEach(m=>{
+    const mrs=reps.filter(r=>r.month===m);
+    html+=`<div class="slbl" style="margin-bottom:12px">${mrs[0].period}</div>`;
+    html+=`<div class="two-col">`;
+    mrs.forEach(r=>{html+=repCard(r)});
+    html+=`</div>`;
+  });
+  g('radmin-content').innerHTML=html;
+  buildAdminCharts(id);
+}
+
+function buildAdminCharts(cid){
+  const all=REPORTS.filter(r=>r.clientId===cid).sort((a,b)=>a.month.localeCompare(b.month));
+  if(!all.length)return;
+  const months=[...new Set(all.map(r=>r.period))];
+  const metaR  =REPORTS.filter(r=>r.clientId===cid&&r.platform==='meta');
+  const gooR   =REPORTS.filter(r=>r.clientId===cid&&r.platform==='google');
+  const iM=months.map(m=>metaR.find(r=>r.period===m)?.invest||0);
+  const iG=months.map(m=>gooR .find(r=>r.period===m)?.invest||0);
+  const cM=months.map(m=>metaR.find(r=>r.period===m)?.conv||0);
+  const cG=months.map(m=>gooR .find(r=>r.period===m)?.conv||0);
+  const chartHtml=`<div class="charts-row" style="margin-top:24px">
+    <div class="cbox"><div class="ctitle">Investimento por plataforma</div><canvas id="ca-inv" height="200"></canvas></div>
+    <div class="cbox"><div class="ctitle">Conversões</div><canvas id="ca-conv" height="200"></canvas></div>
+  </div>`;
+  g('radmin-content').insertAdjacentHTML('beforeend',chartHtml);
+  setTimeout(()=>{
+    mkBar('ca-inv',months,iM,iG,'Investimento R$');
+    mkBar('ca-conv',months,cM,cG,'Conversões');
+  },60);
+}
+
+function showAdminList(){showPage('pg-clients')}
+
+function aTab(t,btn){
+  document.querySelectorAll('#pg-clients .tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['clients','upload','new-client'].forEach(id=>g('atab-'+id).style.display='none');
+  g('atab-'+t).style.display='block';
+}
+
+function populateSelect(){
+  g('u-client').innerHTML=CLIENTS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+function saveReport(){
+  const cid=parseInt(g('u-client').value),plat=g('u-plat').value,
+    per=g('u-period').value,mon=g('u-month').value,
+    inv=parseFloat(g('m-invest').value)||0,
+    imp=parseInt(g('m-imp').value)||0,
+    clk=parseInt(g('m-clicks').value)||0,
+    con=parseInt(g('m-conv').value)||0,
+    ctr=parseFloat(g('m-ctr').value)||0,
+    cpc=parseFloat(g('m-cpc').value)||0,
+    cpl=parseFloat(g('m-cpl').value)||0,
+    roas=parseFloat(g('m-roas').value)||0,
+    obs=g('m-obs').value;
+  if(!per||!mon||!inv){toast('Preencha período, mês e investimento','error');return;}
+  REPORTS.push({id:nRid++,clientId:cid,platform:plat,period:per,month:mon,
+    invest:inv,imp,clicks:clk,conv:con,ctr,cpc,cpl,roas,obs});
+  toast('Relatório publicado!','success');
+  clearForm();renderClients();populateSelect();
+}
+
+function saveClient(){
+  const name=g('nc-name').value.trim(),email=g('nc-email').value.trim(),
+    pass=g('nc-pass').value,plat=g('nc-plat').value;
+  if(!name||!email||!pass){toast('Preencha todos os campos','error');return;}
+  const initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  CLIENTS.push({id:nCid++,name,email,pass,plat,initials});
+  toast(`"${name}" criado com sucesso!`,'success');
+  ['nc-name','nc-email','nc-pass'].forEach(id=>g(id).value='');
+  renderClients();populateSelect();
+}
+
+function clearForm(){
+  ['u-period','u-month','m-invest','m-imp','m-clicks','m-conv',
+   'm-ctr','m-cpc','m-cpl','m-roas','m-obs'].forEach(id=>g(id).value='');
+}
+
+// ══════════════════════════════════════════════
+// CLIENT DASH — acesso isolado por cliente
+// ══════════════════════════════════════════════
+function loadClientDash(){
+  // Encontra o cliente pelo email logado
+  const cl=CLIENTS.find(c=>c.email===CUR.email);
+  if(!cl)return;
+
+  // Saudação personalizada
+  g('cwelcome').textContent=`Olá, ${cl.name.split(' ')[0]} 👋`;
+
+  // Carrega APENAS os relatórios deste cliente
+  const reps=REPORTS.filter(r=>r.clientId===cl.id);
+  const months=[...new Set(reps.map(r=>r.month))].sort().reverse();
+
+  g('cperiods').innerHTML=months.map((m,i)=>{
+    const lbl=reps.find(r=>r.month===m)?.period||m;
+    return`<button class="pp ${i===0?'active':''}" onclick="showMonth('${m}',this)">${lbl}</button>`;
+  }).join('');
+
+  if(months.length) showMonth(months[0],null);
+}
+
+function showMonth(month,btn){
+  if(btn){document.querySelectorAll('.pp').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  const cl=CLIENTS.find(c=>c.email===CUR.email);
+  const reps=REPORTS.filter(r=>r.clientId===cl.id&&r.month===month);
+  const el=g('crep-content');
+
+  if(!reps.length){el.innerHTML='<div class="empty"><div class="ei">📊</div><h3>Sem dados</h3></div>';return;}
+
+  const tot={
+    invest:reps.reduce((s,r)=>s+r.invest,0),
+    clicks:reps.reduce((s,r)=>s+r.clicks,0),
+    conv:  reps.reduce((s,r)=>s+r.conv,0),
+    imp:   reps.reduce((s,r)=>s+r.imp,0),
+  };
+  const avgCpl=tot.conv?(tot.invest/tot.conv):0;
+  const roasArr=reps.filter(r=>r.roas>0);
+  const avgRoas=roasArr.length?roasArr.reduce((s,r)=>s+r.roas,0)/roasArr.length:0;
+  const bestCpl=reps.reduce((a,b)=>a.cpl<b.cpl?a:b);
+
+  let html=`<div class="kpi-grid">
+    <div class="kpi"><div class="kpi-lbl">Investimento</div><div class="kpi-val">R$ ${fmt(tot.invest)}</div><div class="kpi-delta neutral">Total do período</div></div>
+    <div class="kpi"><div class="kpi-lbl">Cliques</div><div class="kpi-val">${tot.clicks.toLocaleString('pt-BR')}</div><div class="kpi-delta up">↑ todas as plataformas</div></div>
+    <div class="kpi"><div class="kpi-lbl">Conversões</div><div class="kpi-val">${tot.conv}</div><div class="kpi-delta up">↑ todas as plataformas</div></div>
+    <div class="kpi"><div class="kpi-lbl">CPL médio</div><div class="kpi-val">R$ ${fmt(avgCpl)}</div><div class="kpi-delta neutral">Custo por lead</div></div>
+    ${avgRoas?`<div class="kpi"><div class="kpi-lbl">ROAS médio</div><div class="kpi-val">${avgRoas.toFixed(2)}x</div><div class="kpi-delta up">↑ retorno sobre anúncio</div></div>`:''}
+  </div>
+  <div class="two-col">${reps.map(r=>repCard(r)).join('')}</div>`;
+
+  // Insights
+  html+=`<div class="card" style="margin-top:0">
+    <div class="ctitle" style="margin-bottom:14px">Destaques do período</div>
+    <div class="insight"><div class="ii">🏆</div><div class="it"><b>Melhor CPL:</b> ${pname(bestCpl.platform)} — R$ ${fmt(bestCpl.cpl)} por conversão.</div></div>
+    <div class="insight"><div class="ii">📊</div><div class="it"><b>${tot.conv} conversões</b> geradas com investimento total de R$ ${fmt(tot.invest)}.</div></div>
+    ${reps.filter(r=>r.obs).map(r=>`<div class="insight"><div class="ii">${r.platform==='meta'?'📘':'🟢'}</div><div class="it"><b>${pname(r.platform)}:</b> ${r.obs}</div></div>`).join('')}
+  </div>`;
+
+  el.innerHTML=html;
+
+  // Charts
+  const chartHtml=`<div class="charts-row" style="margin-top:12px">
+    <div class="cbox"><div class="ctitle">Cliques vs Conversões</div><canvas id="cc1" height="180"></canvas></div>
+    <div class="cbox"><div class="ctitle">Distribuição de investimento</div><canvas id="cc2" height="180"></canvas></div>
+  </div>`;
+  el.insertAdjacentHTML('beforeend',chartHtml);
+  setTimeout(()=>{
+    const lbls=reps.map(r=>pname(r.platform));
+    mkGroupBar('cc1',lbls,reps.map(r=>r.clicks),reps.map(r=>r.conv));
+    mkDoughnut('cc2',lbls,reps.map(r=>r.invest));
+  },60);
+}
+
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+function showPage(id){
+  document.querySelectorAll('#admin-view .page').forEach(p=>p.classList.remove('active'));
+  g(id).classList.add('active');
+}
+function g(id){return document.getElementById(id)}
+function v(id){return g(id).value.trim()}
+function fmt(n){return Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function pname(p){return p==='meta'?'Meta Ads':'Google Ads'}
+function pb(p){return`<span class="pbadge pb-${p}">${pname(p)}</span>`}
+
+function repCard(r){
+  return`<div class="rep-card">
+    <div class="rep-card-head">
+      <span class="pbadge pb-${r.platform}">${pname(r.platform)}</span>
+      <span style="font-size:11px;color:var(--muted)">${r.period}</span>
+    </div>
+    <div class="metrics-grid">
+      ${mx('Investimento','R$ '+fmt(r.invest))}
+      ${mx('Cliques',r.clicks.toLocaleString('pt-BR'))}
+      ${mx('Conversões',r.conv)}
+      ${mx('Impressões',r.imp.toLocaleString('pt-BR'))}
+      ${mx('CTR',r.ctr+'%')}
+      ${mx('CPC','R$ '+fmt(r.cpc))}
+      ${mx('CPL','R$ '+fmt(r.cpl))}
+      ${r.roas?mx('ROAS',r.roas+'x'):''}
+    </div>
+    ${r.obs?`<div class="rep-obs">📝 ${r.obs}</div>`:''}
+  </div>`;
+}
+function mx(l,v){return`<div class="mbox"><div class="mlbl">${l}</div><div class="mval">${v}</div></div>`}
+
+// ══════════════════════════════════════════════
+// CHARTS
+// ══════════════════════════════════════════════
+const go={color:'rgba(255,255,255,0.04)',tickColor:'transparent'};
+const baseO={
+  responsive:true,
+  plugins:{legend:{labels:{color:'#6b6a80',font:{family:'Outfit',size:11},boxWidth:10}}},
+  scales:{
+    x:{grid:go,ticks:{color:'#6b6a80',font:{family:'Outfit',size:10}}},
+    y:{grid:go,ticks:{color:'#6b6a80',font:{family:'Outfit',size:10}}}
+  }
+};
+function mkBar(id,lbls,dA,dB){
+  if(charts[id])charts[id].destroy();
+  const ctx=g(id)?.getContext('2d');if(!ctx)return;
+  charts[id]=new Chart(ctx,{type:'bar',data:{labels:lbls,datasets:[
+    {label:'Meta Ads',  data:dA,backgroundColor:'rgba(24,119,242,0.65)',borderRadius:5},
+    {label:'Google Ads',data:dB,backgroundColor:'rgba(52,168,83,0.65)', borderRadius:5}
+  ]},options:baseO});
+}
+function mkGroupBar(id,lbls,dA,dB){
+  if(charts[id])charts[id].destroy();
+  const ctx=g(id)?.getContext('2d');if(!ctx)return;
+  charts[id]=new Chart(ctx,{type:'bar',data:{labels:lbls,datasets:[
+    {label:'Cliques',    data:dA,backgroundColor:'rgba(232,196,106,0.65)',borderRadius:5},
+    {label:'Conversões', data:dB,backgroundColor:'rgba(62,207,142,0.65)', borderRadius:5}
+  ]},options:baseO});
+}
+function mkDoughnut(id,lbls,data){
+  if(charts[id])charts[id].destroy();
+  const ctx=g(id)?.getContext('2d');if(!ctx)return;
+  charts[id]=new Chart(ctx,{type:'doughnut',data:{labels:lbls,datasets:[{
+    data,backgroundColor:['rgba(24,119,242,0.75)','rgba(52,168,83,0.7)'],
+    borderWidth:0,hoverOffset:4
+  }]},options:{
+    responsive:true,cutout:'65%',
+    plugins:{legend:{position:'bottom',labels:{color:'#6b6a80',font:{family:'Outfit',size:11},boxWidth:10,padding:14}}}
+  }});
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let tt;
+function toast(msg,type='success'){
+  const el=g('toast');
+  g('t-msg').textContent=msg;
+  g('t-icon').textContent=type==='success'?'✓':'✕';
+  el.className='show '+type;
+  clearTimeout(tt);
+  tt=setTimeout(()=>el.className='',2800);
+}
+
+// ── drag & drop ──
+const dz=g('dz');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');toast('Arquivo anexado!')});
+g('fi').addEventListener('change',()=>toast('Arquivo selecionado!'));
+</script>
+</body>
+</html>
