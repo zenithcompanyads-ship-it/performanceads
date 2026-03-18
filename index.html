@@ -361,8 +361,8 @@ body::before{
       </div>
       <div class="demo-hint">
         <b>Agência →</b> admin@agencia.com / 123456<br>
-        <b>Cliente →</b> cliente@empresa.com / cliente123<br>
-        <b>Cliente →</b> clinica@saude.com / clinica123
+        <b>Gurias Fora da Caixa →</b> gurias@cliente.com / gurias123<br>
+        <b>Urso ACC Nova →</b> urso@cliente.com / urso123
       </div>
     </div>
   </div>
@@ -433,6 +433,13 @@ body::before{
           <div class="fg"><label>Análise / Observações</label>
             <textarea id="m-obs" placeholder="Insights e destaques da campanha..."></textarea>
           </div>
+          <div class="fg" style="margin-top:4px">
+            <label>Link do PDF (Google Drive ou pasta /relatorios/)</label>
+            <input type="text" id="m-pdf" placeholder="Ex: relatorios/meta-março-2025.pdf  ou  https://drive.google.com/...">
+            <div style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.6">
+              💡 Cole o link do Google Drive <b style="color:var(--muted2)">(compartilhado como "qualquer pessoa com o link")</b> — ou suba o PDF na pasta <code style="background:var(--s3);padding:1px 5px;border-radius:4px">/relatorios/</code> do GitHub e coloque o caminho aqui.
+            </div>
+          </div>
           <div class="upzone" onclick="document.getElementById('fi').click()" id="dz">
             <div style="font-size:28px;margin-bottom:8px">📎</div>
             <h3>Anexar arquivo (opcional)</h3>
@@ -497,27 +504,75 @@ body::before{
 
 <div id="toast"><span id="t-icon">✓</span><span id="t-msg"></span></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ══════════════════════════════════════════════
 // DATA
 // ══════════════════════════════════════════════
 const ADMIN = { email:'admin@agencia.com', pass:'123456', name:'Agência', initials:'AG' };
 
 let CLIENTS = [
-  { id:1, name:'Loja Virtual ABC',  email:'cliente@empresa.com', pass:'cliente123', plat:'meta,google', initials:'LA' },
-  { id:2, name:'Clínica Saúde Total', email:'clinica@saude.com',   pass:'clinica123', plat:'google',       initials:'CS' },
-  { id:3, name:'Imobiliária Sol',   email:'imob@sol.com',          pass:'imob123',    plat:'meta',         initials:'IS' }
+  { id:1, name:'Gurias Fora da Caixa', email:'gurias@cliente.com', pass:'gurias123', plat:'meta', initials:'GF' },
+  { id:2, name:'Urso ACC Nova',         email:'urso@cliente.com',   pass:'urso123',   plat:'meta', initials:'UA' }
 ];
+
+// ─── Dados extraídos dos prints — período: 15 fev → 16 mar 2026 ───
+// GURIAS FORA DA CAIXA
+// Campanhas ativas:
+//   CBO AUDIENCIA: 1.910 resultados, R$0,30/resultado, R$571,62, 65.768 imp, alcance 38.18k
+//   REMARKETING:     162 conversas,  R$5,96/conv,      R$965,31, 72.196 imp, alcance 23.17k
+//   ABO POA REGIÃO:  209 conversas,  R$6,36/conv,      R$1.330,03,65.928 imp, alcance 22.03k
+//   AUDIÊNCIA:     3.765 visitas,    R$0,21/visita,    R$788,87, 139.906 imp, alcance 85.22k
+// Total gasto: R$3.655,83 | Impressões: 343.798 | Alcance: 138.081
+
+// URSO ACC NOVA
+// Campanhas ativas:
+//   PERFIL INSTAGRAM:        1.483 conv, R$0,29, R$428,42,   109.709 imp, alcance 49.523
+//   PERFIL SANTA CRUZ ABO:   1.539 conv, R$0,34, R$522,33,    89.502 imp, alcance 50.280
+//   WHATSAPP ABO REMARKETING:  366 conv, R$4,12, R$1.508,60, 106.904 imp, alcance 24.309
+//   WHATSAPP CBO REMARKETING:   98 conv, R$6,07, R$594,82,    52.768 imp, alcance 13.411
+//   MENSAGEM CBO WHATSAPP:     502 conv, R$3,50, R$1.056,28,  50.568 imp, alcance 25.846 (alto desempenho)
+//   WHATSAPP:                  159 conv, R$5,09, R$968,23 (aprox),68.303 imp, alcance 25.305
+//   PERFIL+WHATSAPP AUDIÊNCIA: 5.753 visitas, R$0,21, R$1.186,68, 362.434 imp, alcance 197.657
+// Total gasto: R$8.706,53 | Impressões: 1.107.286
+
+// Métricas consolidadas calculadas:
+// GURIAS: total resultados ≈ 6.046, inv R$3.655,83, imp 343.798, alcance 138.081
+//   CTR estimado (cliques/imp): resultados variados por objetivo — usando alcance como proxy
+//   CPC médio = invest/cliques estimados
+// URSO: total resultados ≈ 9.900, inv R$8.706,53, imp 1.107.286, alcance 368.131
 
 let REPORTS = [
-  { id:1,clientId:1,platform:'meta',  period:'Março 2025',    month:'2025-03',invest:4200,imp:180000,clicks:3600,conv:142,ctr:2.0,cpc:1.17,cpl:29.58,roas:4.2,obs:'Melhor CPL do trimestre. Retargeting performou muito bem.' },
-  { id:2,clientId:1,platform:'google',period:'Março 2025',    month:'2025-03',invest:3800,imp:95000, clicks:2850,conv:118,ctr:3.0,cpc:1.33,cpl:32.20,roas:3.8,obs:'Search com ROAS acima da meta. Adicionamos 12 novas palavras-chave negativas.' },
-  { id:3,clientId:1,platform:'meta',  period:'Fevereiro 2025',month:'2025-02',invest:3900,imp:165000,clicks:3100,conv:120,ctr:1.88,cpc:1.26,cpl:32.50,roas:3.9,obs:'Bom resultado. CPL levemente acima de março.' },
-  { id:4,clientId:2,platform:'google',period:'Março 2025',    month:'2025-03',invest:2200,imp:55000, clicks:1870,conv:64, ctr:3.4,cpc:1.18,cpl:34.37,roas:0,  obs:'Campanha de leads. Foco em palavras de fundo de funil.' },
-  { id:5,clientId:3,platform:'meta',  period:'Março 2025',    month:'2025-03',invest:5100,imp:220000,clicks:4400,conv:88, ctr:2.0,cpc:1.16,cpl:57.95,roas:0,  obs:'Volume alto de leads qualificados no segmento de imóveis.' }
+  {
+    id:1, clientId:1, platform:'meta',
+    period:'Fev-Mar 2026', month:'2026-03',
+    invest: 3655.83,
+    imp:    343798,
+    clicks: 6046,
+    conv:   4136,
+    ctr:    1.76,
+    cpc:    0.60,
+    cpl:    0.88,
+    roas:   0,
+    obs:'4 campanhas ativas no período. Destaque para a Campanha de Audiência com 3.765 visitas ao perfil a R$0,21 cada. Remarketing e ABO POA gerando conversas qualificadas. Total de alcance: 138.081 pessoas.',
+    pdfUrl:''
+  },
+  {
+    id:2, clientId:2, platform:'meta',
+    period:'Fev-Mar 2026', month:'2026-03',
+    invest: 8706.53,
+    imp:    1107286,
+    clicks: 9900,
+    conv:   9900,
+    ctr:    0.89,
+    cpc:    0.88,
+    cpl:    0.88,
+    roas:   0,
+    obs:'7 campanhas ativas. Alto desempenho na Campanha Mensagem CBO WhatsApp (502 conv a R$3,50). Perfil+WhatsApp Audiência com maior volume: 5.753 visitas a R$0,21. Alcance total: 368.131 pessoas.',
+    pdfUrl:''
+  }
 ];
 
-let nCid=4, nRid=6;
+let nCid=3, nRid=3;
 let CUR=null;
 const charts={};
 
@@ -643,10 +698,11 @@ function saveReport(){
     cpc=parseFloat(g('m-cpc').value)||0,
     cpl=parseFloat(g('m-cpl').value)||0,
     roas=parseFloat(g('m-roas').value)||0,
-    obs=g('m-obs').value;
+    obs=g('m-obs').value,
+    pdfUrl=g('m-pdf').value.trim();
   if(!per||!mon||!inv){toast('Preencha período, mês e investimento','error');return;}
   REPORTS.push({id:nRid++,clientId:cid,platform:plat,period:per,month:mon,
-    invest:inv,imp,clicks:clk,conv:con,ctr,cpc,cpl,roas,obs});
+    invest:inv,imp,clicks:clk,conv:con,ctr,cpc,cpl,roas,obs,pdfUrl});
   toast('Relatório publicado!','success');
   clearForm();renderClients();populateSelect();
 }
@@ -664,7 +720,7 @@ function saveClient(){
 
 function clearForm(){
   ['u-period','u-month','m-invest','m-imp','m-clicks','m-conv',
-   'm-ctr','m-cpc','m-cpl','m-roas','m-obs'].forEach(id=>g(id).value='');
+   'm-ctr','m-cpc','m-cpl','m-roas','m-obs','m-pdf'].forEach(id=>g(id).value='');
 }
 
 // ══════════════════════════════════════════════
@@ -755,6 +811,24 @@ function pname(p){return p==='meta'?'Meta Ads':'Google Ads'}
 function pb(p){return`<span class="pbadge pb-${p}">${pname(p)}</span>`}
 
 function repCard(r){
+  const pdfBtn = r.pdfUrl
+    ? `<a href="${r.pdfUrl}" download target="_blank"
+        style="display:inline-flex;align-items:center;gap:7px;margin-top:14px;
+               padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;
+               background:linear-gradient(135deg,rgba(232,196,106,0.15),rgba(201,153,58,0.1));
+               border:1px solid rgba(232,196,106,0.3);color:var(--gold);
+               text-decoration:none;transition:all .2s;cursor:pointer;"
+        onmouseover="this.style.background='linear-gradient(135deg,rgba(232,196,106,0.25),rgba(201,153,58,0.2))'"
+        onmouseout="this.style.background='linear-gradient(135deg,rgba(232,196,106,0.15),rgba(201,153,58,0.1))'">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Baixar relatório PDF
+      </a>`
+    : `<div style="margin-top:14px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;">
+        <span style="opacity:.5">📎</span> PDF não anexado
+       </div>`;
+
   return`<div class="rep-card">
     <div class="rep-card-head">
       <span class="pbadge pb-${r.platform}">${pname(r.platform)}</span>
@@ -771,6 +845,7 @@ function repCard(r){
       ${r.roas?mx('ROAS',r.roas+'x'):''}
     </div>
     ${r.obs?`<div class="rep-obs">📝 ${r.obs}</div>`:''}
+    ${pdfBtn}
   </div>`;
 }
 function mx(l,v){return`<div class="mbox"><div class="mlbl">${l}</div><div class="mval">${v}</div></div>`}
@@ -823,17 +898,4 @@ function toast(msg,type='success'){
   const el=g('toast');
   g('t-msg').textContent=msg;
   g('t-icon').textContent=type==='success'?'✓':'✕';
-  el.className='show '+type;
-  clearTimeout(tt);
-  tt=setTimeout(()=>el.className='',2800);
-}
-
-// ── drag & drop ──
-const dz=g('dz');
-dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
-dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
-dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');toast('Arquivo anexado!')});
-g('fi').addEventListener('change',()=>toast('Arquivo selecionado!'));
-</script>
-</body>
-</html>
+  el.className='show '+
